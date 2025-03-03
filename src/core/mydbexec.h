@@ -6,7 +6,7 @@
 #include "mydb.h"
 
 int mydb_exec(
-    mydb*,                                  /* An open database */
+    mydb_t *db,                                  /* An open database */
     const char *sql,                           /* SQL to be evaluated */
     int (*callback)(void*,int,char**,char**),  /* Callback function */
     void *,                                    /* 1st argument to callback */
