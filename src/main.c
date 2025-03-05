@@ -1,34 +1,57 @@
 #include "core/mydb.h"
 #include "core/mydbexec.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_INPUT_SIZE 1024  // Max SQL command length
+
+void start_repl(mydb_t *db) {
+    char input[MAX_INPUT_SIZE];
+    char *errmsg = NULL;
+
+    printf("Welcome to mydb! Type SQL commands or '.exit' to quit.\n");
+
+    while (1) {
+        printf("mydb> ");  // REPL prompt
+        if (fgets(input, MAX_INPUT_SIZE, stdin) == NULL) {
+            printf("\nExiting...\n");
+            break;
+        }
+
+        // Remove newline from input
+        input[strcspn(input, "\n")] = 0;
+
+        if (strcmp(input, ".exit") == 0) {
+            printf("Goodbye!\n");
+            break;
+        }
+
+        // Execute the command
+        mydb_exec(db, input, NULL, NULL, &errmsg);
+
+        if (errmsg) {
+            printf("SQL Error: %s\n", errmsg);
+            free(errmsg);  // Free allocated error message
+            errmsg = NULL;
+        }
+    }
+}
 
 int main() {
     mydb_t *db;
-    char *errmsg = NULL;
 
     // Open database
-    if (mydb_open("test.db", &db) == 0) {
-        printf("Database opened successfully: %s\n", db->filename);
-    } else {
+    if (mydb_open("test.db", &db) != 0) {
         printf("Failed to open database.\n");
         return 1;
     }
 
-    // Execute SQL queries
-    mydb_exec(db, "CREATE TABLE users (id INT, name TEXT);", NULL, NULL, &errmsg);
-    mydb_exec(db, "INSERT INTO users VALUES (1, 'Alice');", NULL, NULL, &errmsg);
-    mydb_exec(db, "SELECT * FROM users;", NULL, NULL, &errmsg);
-
-    if (errmsg) {
-        printf("SQL Error: %s\n", errmsg);
-    }
+    // Start the interactive REPL
+    start_repl(db);
 
     // Close database
-    if (mydb_close(db) == 0) {
-        printf("Database closed successfully.\n");
-    } else {
-        printf("Failed to close database.\n");
-    }
+    mydb_close(db);
 
     return 0;
 }
