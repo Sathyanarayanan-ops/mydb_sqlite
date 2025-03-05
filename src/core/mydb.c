@@ -2,41 +2,40 @@
 #include <string.h>
 
 // Function to open a db connection 
-int mydb_open(const char *filename, mydb_t **db){
-    // allocate memory for the db handle 
+#include "mydb.h"
+#include <string.h>
+
+int mydb_open(const char *filename, mydb_t **db) {
     *db = (mydb_t *)malloc(sizeof(mydb_t));
-    if (*db == NULL){
-        return -1; // memory allocation fail
+    if (*db == NULL) {
+        return -1;  // Memory allocation failed
     }
 
-    // store the filename in the database handle 
     (*db)->filename = strdup(filename);
-    if ((*db)->filename == NULL){
-        free(*db);
-        return -1;  //memory allocation fail
-    }
-
-    // Open the database file
-
-    (*db)->db_file = fopen(filename , "a+");
-    if ((*db)->db_file == NULL){
-        free((*db)->filename);
+    if ((*db)->filename == NULL) {
         free(*db);
         return -1;
     }
 
-    return 0; // success
-}
-
-int mydb_close(mydb_t *db){
-    if (db == NULL){
-        return -1 ;
+    // Open SQLite database
+    if (sqlite3_open(filename, &((*db)->sqlite_db)) != SQLITE_OK) {
+        free((*db)->filename);
+        free(*db);
+        return -1;  // SQLite failed to open
     }
 
-    // close the file if open 
+    return 0;  // Success
+}
 
-    if(db->db_file != NULL){
-        fclose(db->db_file);
+
+int mydb_close(mydb_t *db) {
+    if (db == NULL) {
+        return -1;
+    }
+
+    // Close SQLite connection
+    if (db->sqlite_db != NULL) {
+        sqlite3_close(db->sqlite_db);
     }
 
     free(db->filename);

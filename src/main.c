@@ -28,12 +28,9 @@ void start_repl(mydb_t *db) {
         }
 
         // Execute the command
-        mydb_exec(db, input, NULL, NULL, &errmsg);
-
-        if (errmsg) {
+        if (mydb_exec(db, input, NULL, NULL, &errmsg) != 0) {
             printf("SQL Error: %s\n", errmsg);
-            free(errmsg);  // Free allocated error message
-            errmsg = NULL;
+            sqlite3_free(errmsg);  // Free SQLite error message
         }
     }
 }
