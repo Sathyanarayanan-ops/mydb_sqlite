@@ -66,3 +66,6 @@ int main() {
 
     return 0;
 }
+
+
+// Implement full scale next 
